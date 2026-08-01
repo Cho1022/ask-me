@@ -14,7 +14,7 @@
 - MySQL은 메뉴, 별칭, 옵션, 주문과 주문 시점의 가격 스냅샷을 저장합니다.
 - Google Cloud Speech-to-Text는 음성 기능이 활성화된 경우에만 호출되며 인식된 텍스트는 주문 파서로 전달됩니다.
 
-> 다이어그램은 시각 표기를 위해 [AWS Architecture Icons 2026 Q2](https://aws.amazon.com/architecture/icons/)의 General Resource 아이콘을 사용합니다. EC2, ECS, RDS 등 특정 AWS 서비스에 현재 배포되었다는 의미는 아닙니다.
+> 다이어그램의 AWS 서비스 표기는 [AWS Architecture Icons 2026 Q2](https://aws.amazon.com/architecture/icons/)를, GitHub·Docker·Vue·TypeScript·Java·Spring Boot·MySQL·Google Cloud 등의 제품 로고는 [Devicon](https://devicon.dev/) SVG를 사용합니다. 아이콘은 사용 기술 또는 배포 목표를 나타내며, EC2·ECS·RDS 등 AWS 리소스가 현재 배포되어 있다는 의미는 아닙니다.
 
 ## AWS 배포 목표 구조
 
