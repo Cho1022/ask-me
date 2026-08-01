@@ -1,52 +1,34 @@
-﻿# Contributing
-
-이 저장소는 `main` 기준 Git 협업 흐름을 사용합니다.
-
-## 기본 흐름
-
-1. `main`을 최신 상태로 동기화합니다.
-2. 작업 브랜치를 생성합니다.
-3. 필요한 변경만 커밋합니다.
-4. 원격 브랜치로 push 합니다.
-5. `main` 대상으로 PR을 생성합니다.
-
-예시:
-
-```powershell
-git checkout main
-git pull origin main
-git checkout -b feature/short-topic
-git add <changed-files>
-git commit -m "Add short topic"
-git push -u origin feature/short-topic
-```
-
-## 브랜치 규칙
-
-- 기능 추가: `feature/<topic>`
-- 버그 수정: `fix/<topic>`
-- 문서/정리: `chore/<topic>`
-
-## 커밋 규칙
-
-- 한 커밋에는 한 가지 목적만 담습니다.
-- 커밋 메시지는 짧고 동작 중심으로 작성합니다.
-- 예시: `Add voice order confirmation summary`
-
-## PR 규칙
-
-- PR 본문에는 목적, 주요 변경점, 검증 결과를 적습니다.
-- UI 변경이 있으면 스크린샷 또는 확인 방법을 함께 남깁니다.
-- 데이터베이스 변경이 있으면 재현 절차를 함께 적습니다.
+# Contributing
 
 ## 작업 전 확인
 
-브랜치 전환이나 정리 전에 아래를 먼저 확인합니다.
-
 ```powershell
-git status
 git branch --show-current
-git remote -v
+git status --short
 ```
 
-워킹 트리에 미커밋 변경이 있으면 먼저 커밋하거나 별도 브랜치로 보호한 뒤 진행합니다.
+기능 브랜치는 최신 `main`에서 생성하고 기존 작업자의 변경을 되돌리지 않습니다.
+
+## 로컬 검증
+
+```powershell
+cd frontend
+npm run test:run
+npm run build
+```
+
+```powershell
+.\scripts\test-backend.ps1
+cd backend
+.\gradlew.bat build -x test
+```
+
+백엔드 통합 테스트는 Testcontainers MySQL을 사용하므로 Docker Desktop이 필요합니다. 테스트 스크립트는 Windows 한글 경로의 Gradle 테스트 워커 문제를 피하기 위해 임시 드라이브 문자를 사용하고 자동으로 해제합니다.
+
+## 변경 원칙
+
+- API DTO와 DB 엔티티를 분리합니다.
+- 주문 가격은 클라이언트 값을 신뢰하지 않고 서버에서 계산합니다.
+- Flyway 이외의 방법으로 운영 스키마를 변경하지 않습니다.
+- Google 인증 정보와 `.env`를 커밋하지 않습니다.
+- 음성 인식, 주문 파싱, 주문 저장을 독립적으로 테스트할 수 있게 유지합니다.
