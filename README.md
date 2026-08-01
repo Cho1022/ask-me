@@ -2,6 +2,20 @@
 
 터치와 음성을 함께 지원하는 카페 주문 키오스크입니다. 기존 Python·Flask 프로토타입의 기능 요구사항과 회귀 사례만 참고해 Vue 3, TypeScript, Spring Boot, MySQL로 새로 구축했습니다.
 
+## 현재 아키텍처
+
+![Ask Me Voice Kiosk 현재 아키텍처](docs/architecture/current-architecture.svg)
+
+현재 구성은 AWS에 배포된 구조가 아니라 Docker Compose에서 실행되는 3개 컨테이너 구조입니다.
+
+- 브라우저는 Nginx가 제공하는 Vue 3 정적 파일을 내려받고 터치 입력과 최대 20초 음성 녹음을 처리합니다.
+- Nginx는 `/api` 요청을 Spring Boot 백엔드의 `8080` 포트로 프록시합니다.
+- Spring Boot는 메뉴·옵션 검증, Java 주문 문장 파싱, 서버 가격 재계산과 주문 트랜잭션을 담당합니다.
+- MySQL은 메뉴, 별칭, 옵션, 주문과 주문 시점의 가격 스냅샷을 저장합니다.
+- Google Cloud Speech-to-Text는 음성 기능이 활성화된 경우에만 호출되며 인식된 텍스트는 주문 파서로 전달됩니다.
+
+> 다이어그램은 시각 표기를 위해 [AWS Architecture Icons 2026 Q2](https://aws.amazon.com/architecture/icons/)의 General Resource 아이콘을 사용합니다. EC2, ECS, RDS 등 특정 AWS 서비스에 현재 배포되었다는 의미는 아닙니다.
+
 ## 핵심 흐름
 
 ```text
