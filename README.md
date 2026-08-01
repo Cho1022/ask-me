@@ -16,6 +16,18 @@
 
 > 다이어그램은 시각 표기를 위해 [AWS Architecture Icons 2026 Q2](https://aws.amazon.com/architecture/icons/)의 General Resource 아이콘을 사용합니다. EC2, ECS, RDS 등 특정 AWS 서비스에 현재 배포되었다는 의미는 아닙니다.
 
+## AWS 배포 매핑 (미구현)
+
+![Ask Me Voice Kiosk AWS 배포 매핑](docs/architecture/aws-deployment-reference.png)
+
+참고 이미지와 같은 AWS 아키텍처 표현을 위해, 현재 구성 요소를 다음 AWS 서비스로 옮겼을 때의 목표 구조를 정리했습니다. 이 섹션은 **현재 운영 구조가 아니라 배포 설계 참고용**입니다.
+
+- Vue 3 정적 빌드는 Amazon S3 origin과 CloudFront 배포로 매핑합니다.
+- Spring Boot 컨테이너는 Amazon ECR 이미지와 ECS Fargate 서비스로 매핑하며, ALB가 `/api` 요청을 전달합니다.
+- 현재 MySQL 컨테이너는 Amazon RDS for MySQL로 매핑합니다.
+- Google Speech-to-Text V1 호출은 private subnet의 ECS 서비스에서 NAT Gateway를 통한 아웃바운드 HTTPS 통신으로 유지합니다.
+- 현재 GitHub Actions는 테스트와 빌드만 실행합니다. S3 업로드, ECR 푸시, AWS 리소스 생성과 배포 권한은 아직 구성하지 않았습니다.
+
 ## 핵심 흐름
 
 ```text

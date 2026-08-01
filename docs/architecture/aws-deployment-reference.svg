@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1010" viewBox="0 0 1720 1010" role="img" aria-labelledby="diagram-title diagram-desc">
+  <title id="diagram-title">Ask Me Voice Kiosk AWS deployment reference architecture</title>
+  <desc id="diagram-desc">A future AWS deployment mapping for the current Vue, Spring Boot, and MySQL application. GitHub Actions would publish frontend artifacts to S3 and backend images to ECR. CloudFront would serve the frontend, an Application Load Balancer would send API traffic to ECS Fargate, and RDS for MySQL would store the data. Google Cloud Speech-to-Text is an external service reached through a NAT Gateway. None of these AWS resources are provisioned in the current repository.</desc>
+
+  <defs>
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#16202A" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#26323D"/>
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#147EFB"/>
+    </marker>
+    <style>
+      .title { font: 700 28px "Segoe UI", "Noto Sans KR", sans-serif; fill: #18212B; }
+      .subtitle { font: 400 14px "Segoe UI", "Noto Sans KR", sans-serif; fill: #5C6670; }
+      .group-title { font: 700 15px "Segoe UI", "Noto Sans KR", sans-serif; fill: #18212B; }
+      .label { font: 700 14px "Segoe UI", "Noto Sans KR", sans-serif; fill: #18212B; }
+      .small { font: 400 12px "Segoe UI", "Noto Sans KR", sans-serif; fill: #53606C; }
+      .tiny { font: 400 11px "Segoe UI", "Noto Sans KR", sans-serif; fill: #5F6B76; }
+      .aws-label { font: 700 12px "Segoe UI", "Noto Sans KR", sans-serif; fill: #2F3943; }
+      .arrow-label { font: 700 11px "Segoe UI", "Noto Sans KR", sans-serif; fill: #1B5FAD; }
+      .future-label { font: 700 12px "Segoe UI", "Noto Sans KR", sans-serif; fill: #B14B00; }
+    </style>
+  </defs>
+
+  <rect width="1720" height="1010" fill="#FFFFFF"/>
+  <rect width="1720" height="8" fill="#FF9900"/>
+  <text x="52" y="53" class="title">AWS DEPLOYMENT REFERENCE ARCHITECTURE</text>
+  <text x="52" y="79" class="subtitle">Ask Me Voice Kiosk · 현재 Docker Compose 구성을 AWS 서비스로 옮길 때의 목표 매핑</text>
+  <g transform="translate(1302 32)">
+    <rect width="360" height="48" rx="24" fill="#FFF4E5" stroke="#FFB766"/>
+    <circle cx="23" cy="24" r="7" fill="#FF9900"/>
+    <text x="40" y="21" class="future-label">TARGET ARCHITECTURE · NOT PROVISIONED</text>
+    <text x="40" y="37" class="tiny">현재 저장소에는 AWS 리소스나 IaC가 없습니다.</text>
+  </g>
+
+  <!-- Current CI boundary -->
+  <g filter="url(#shadow)">
+    <rect x="52" y="142" width="320" height="182" rx="10" fill="#FFFFFF" stroke="#4E5965" stroke-width="2" stroke-dasharray="7 6"/>
+  </g>
+  <text x="72" y="173" class="group-title">CURRENT CI</text>
+  <text x="72" y="195" class="small">배포가 아닌 테스트·빌드 검증만 실행</text>
+  <g transform="translate(86 222)">
+    <rect width="92" height="61" rx="8" fill="#F5F7F8" stroke="#D6DCE1"/>
+    <path d="M28 30 h36 M32 21 v18 M60 21 v18" stroke="#26323D" stroke-width="3" stroke-linecap="round"/>
+    <text x="46" y="84" text-anchor="middle" class="aws-label">GitHub</text>
+  </g>
+  <path d="M180 252 H232" fill="none" stroke="#26323D" stroke-width="2" marker-end="url(#arrow)"/>
+  <g transform="translate(240 222)">
+    <rect width="98" height="61" rx="8" fill="#F5F7F8" stroke="#D6DCE1"/>
+    <path d="M25 20 L42 30 L25 40 Z M51 20 L68 30 L51 40 Z" fill="none" stroke="#147EFB" stroke-width="3" stroke-linejoin="round"/>
+    <text x="49" y="84" text-anchor="middle" class="aws-label">Actions CI</text>
+  </g>
+
+  <!-- User -->
+  <g filter="url(#shadow)">
+    <rect x="72" y="460" width="200" height="154" rx="14" fill="#FFFFFF" stroke="#D6DCE1"/>
+    <rect x="72" y="460" width="6" height="154" rx="3" fill="#FF9900"/>
+  </g>
+  <image href="aws-icons/client.svg" x="145" y="480" width="55" height="55"/>
+  <text x="172" y="559" text-anchor="middle" class="label">Kiosk user</text>
+  <text x="172" y="583" text-anchor="middle" class="small">Browser · touch · microphone</text>
+
+  <!-- AWS Cloud -->
+  <rect x="420" y="122" width="1240" height="708" fill="#FFFFFF" stroke="#7B8793" stroke-width="2"/>
+  <image href="aws-icons/aws-cloud.svg" x="432" y="132" width="28" height="28"/>
+  <text x="467" y="152" class="group-title">AWS Cloud</text>
+
+  <!-- Region -->
+  <rect x="450" y="172" width="1178" height="620" fill="#FCFEFF" stroke="#00A1B3" stroke-width="2" stroke-dasharray="8 7"/>
+  <image href="aws-icons/region.svg" x="463" y="183" width="25" height="25"/>
+  <text x="494" y="202" class="group-title" fill="#008D9A">Region · ap-northeast-2 (target)</text>
+
+  <!-- Static delivery -->
+  <g filter="url(#shadow)">
+    <rect x="496" y="244" width="244" height="150" rx="12" fill="#FFFFFF" stroke="#D6DCE1"/>
+  </g>
+  <image href="aws-icons/s3.svg" x="522" y="272" width="58" height="58"/>
+  <text x="600" y="287" class="aws-label">Amazon S3</text>
+  <text x="600" y="309" class="small">Vue 3 static build</text>
+  <text x="522" y="355" class="tiny">현재 Nginx 정적 파일 제공을</text>
+  <text x="522" y="373" class="tiny">S3 origin으로 매핑</text>
+
+  <g filter="url(#shadow)">
+    <rect x="590" y="470" width="208" height="140" rx="12" fill="#FFFFFF" stroke="#D6DCE1"/>
+  </g>
+  <image href="aws-icons/cloudfront.svg" x="614" y="493" width="58" height="58"/>
+  <text x="687" y="510" class="aws-label">CloudFront</text>
+  <text x="687" y="532" class="small">HTTPS · static delivery</text>
+  <text x="614" y="577" class="tiny">browser entry point</text>
+
+  <!-- ECR -->
+  <g filter="url(#shadow)">
+    <rect x="1282" y="218" width="224" height="134" rx="12" fill="#FFFFFF" stroke="#D6DCE1"/>
+  </g>
+  <image href="aws-icons/ecr.svg" x="1308" y="244" width="58" height="58"/>
+  <text x="1380" y="262" class="aws-label">Amazon ECR</text>
+  <text x="1380" y="284" class="small">Spring Boot image</text>
+  <text x="1308" y="327" class="tiny">image registry (target)</text>
+
+  <!-- VPC -->
+  <rect x="830" y="330" width="726" height="414" fill="#FFFFFF" stroke="#8E56E9" stroke-width="3"/>
+  <image href="aws-icons/vpc.svg" x="844" y="341" width="26" height="26"/>
+  <text x="876" y="362" class="group-title" fill="#7342C7">VPC</text>
+
+  <!-- Public subnet -->
+  <rect x="862" y="380" width="250" height="322" fill="#F4F8EB" stroke="#7AA116" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="882" y="407" class="aws-label" fill="#5D8610">Public subnet</text>
+  <g filter="url(#shadow)">
+    <rect x="893" y="435" width="188" height="110" rx="10" fill="#FFFFFF" stroke="#D6DCE1"/>
+  </g>
+  <image href="aws-icons/alb.svg" x="913" y="454" width="52" height="52"/>
+  <text x="972" y="472" class="aws-label">Application</text>
+  <text x="972" y="490" class="aws-label">Load Balancer</text>
+  <text x="913" y="524" class="tiny">/api → service</text>
+  <g filter="url(#shadow)">
+    <rect x="893" y="570" width="188" height="102" rx="10" fill="#FFFFFF" stroke="#D6DCE1"/>
+  </g>
+  <image href="aws-icons/nat-gateway.svg" x="913" y="592" width="48" height="48"/>
+  <text x="972" y="611" class="aws-label">NAT Gateway</text>
+  <text x="913" y="651" class="tiny">outbound HTTPS only</text>
+
+  <!-- Private app subnet -->
+  <rect x="1140" y="380" width="382" height="158" fill="#EBF8FA" stroke="#00A1B3" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="1160" y="407" class="aws-label" fill="#008D9A">Private app subnet</text>
+  <image href="aws-icons/ecs.svg" x="1172" y="431" width="58" height="58"/>
+  <text x="1240" y="448" class="aws-label">Amazon ECS Fargate</text>
+  <text x="1240" y="470" class="small">Spring Boot 4.1 · Java 21</text>
+  <text x="1172" y="515" class="tiny">parser · order validation · transaction</text>
+  <image href="aws-icons/secrets-manager.svg" x="1438" y="431" width="50" height="50"/>
+  <text x="1463" y="505" text-anchor="middle" class="tiny">Secrets</text>
+
+  <!-- Private data subnet -->
+  <rect x="1140" y="566" width="382" height="138" fill="#EBF8FA" stroke="#00A1B3" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="1160" y="593" class="aws-label" fill="#008D9A">Private data subnet</text>
+  <image href="aws-icons/rds.svg" x="1220" y="612" width="60" height="60"/>
+  <text x="1294" y="632" class="aws-label">Amazon RDS for MySQL</text>
+  <text x="1294" y="654" class="small">menus · options · orders</text>
+  <text x="1294" y="677" class="tiny">MySQL 8.4 compatible target</text>
+
+  <!-- External service -->
+  <g filter="url(#shadow)">
+    <rect x="1100" y="865" width="430" height="98" rx="12" fill="#FFFFFF" stroke="#4E5965" stroke-width="2" stroke-dasharray="7 6"/>
+  </g>
+  <path d="M1150 918 C1150 899 1166 889 1182 895 C1190 874 1220 871 1233 893 C1254 889 1269 902 1269 920 C1269 938 1255 947 1239 947 H1175 C1160 947 1150 937 1150 918 Z" fill="#EAF2FF" stroke="#4285F4" stroke-width="3"/>
+  <text x="1300" y="902" class="label">Google Cloud Speech-to-Text V1</text>
+  <text x="1300" y="927" class="small">외부 음성 인식 API · `ko-KR` · 동기 인식</text>
+
+  <!-- Flow arrows -->
+  <path d="M272 536 H590" fill="none" stroke="#26323D" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="383" y="511" width="82" height="22" rx="11" fill="#F5F7F8"/>
+  <text x="424" y="526" text-anchor="middle" class="tiny">HTTPS</text>
+
+  <path d="M620 394 V470" fill="none" stroke="#26323D" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="631" y="421" width="92" height="22" rx="11" fill="#F5F7F8"/>
+  <text x="677" y="436" text-anchor="middle" class="tiny">static origin</text>
+
+  <path d="M798 536 H893" fill="none" stroke="#26323D" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="815" y="510" width="60" height="22" rx="11" fill="#F5F7F8"/>
+  <text x="845" y="525" text-anchor="middle" class="tiny">/api</text>
+
+  <path d="M1081 490 H1172" fill="none" stroke="#26323D" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M1260 538 V612" fill="none" stroke="#26323D" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="1270" y="560" width="70" height="22" rx="11" fill="#F5F7F8"/>
+  <text x="1305" y="575" text-anchor="middle" class="tiny">JPA / JDBC</text>
+
+  <path d="M1395 352 V431" fill="none" stroke="#147EFB" stroke-width="2.5" stroke-dasharray="7 6" marker-end="url(#arrow-blue)"/>
+  <rect x="1408" y="378" width="75" height="22" rx="11" fill="#EAF2FF"/>
+  <text x="1446" y="393" text-anchor="middle" class="arrow-label">image*</text>
+
+  <path d="M338 252 H448 V218 H568 V244" fill="none" stroke="#147EFB" stroke-width="2.5" stroke-dasharray="7 6" marker-end="url(#arrow-blue)"/>
+  <path d="M338 252 H448 V135 H1395 V218" fill="none" stroke="#147EFB" stroke-width="2.5" stroke-dasharray="7 6" marker-end="url(#arrow-blue)"/>
+  <text x="469" y="128" class="arrow-label">future delivery setup*</text>
+
+  <path d="M1230 489 V724 H987 V672" fill="none" stroke="#26323D" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M987 672 V820 H1315 V865" fill="none" stroke="#26323D" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="1030" y="789" width="116" height="22" rx="11" fill="#F5F7F8"/>
+  <text x="1088" y="804" text-anchor="middle" class="tiny">outbound HTTPS</text>
+
+  <text x="52" y="982" class="tiny">* 미구현 항목: GitHub Actions의 AWS 배포 권한, S3 업로드, ECR 푸시, ECS/RDS/VPC/Secrets Manager 프로비저닝, IaC, 운영 모니터링.</text>
+  <text x="1660" y="982" text-anchor="end" class="tiny">AWS Architecture Icons 2026 Q2</text>
+</svg>
