@@ -1,0 +1,47 @@
+name: ask-me
+
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: askme
+      MYSQL_USER: askme
+      MYSQL_PASSWORD: askme
+      MYSQL_ROOT_PASSWORD: root
+      TZ: Asia/Seoul
+    ports:
+      - "3306:3306"
+    volumes:
+      - askme-mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/askme?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Seoul
+      DB_USERNAME: askme
+      DB_PASSWORD: askme
+      FRONTEND_ORIGIN: http://localhost:5173
+      TZ: Asia/Seoul
+      GOOGLE_STT_ENABLED: ${GOOGLE_STT_ENABLED:-false}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
+      GOOGLE_STT_TIMEOUT_SECONDS: ${GOOGLE_STT_TIMEOUT_SECONDS:-15}
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  askme-mysql:

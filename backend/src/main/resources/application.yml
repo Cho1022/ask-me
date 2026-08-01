@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: askme-backend
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/askme?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Seoul}
+    username: ${DB_USERNAME:askme}
+    password: ${DB_PASSWORD:askme}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Seoul
+  flyway:
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+server:
+  port: ${PORT:8080}
+
+app:
+  frontend-origin: ${FRONTEND_ORIGIN:http://localhost:5173}
+  google-stt:
+    enabled: ${GOOGLE_STT_ENABLED:false}
+    language-code: ${GOOGLE_STT_LANGUAGE_CODE:ko-KR}
+    max-audio-bytes: 5242880
+    max-duration-ms: 20000
+    timeout-seconds: ${GOOGLE_STT_TIMEOUT_SECONDS:15}
