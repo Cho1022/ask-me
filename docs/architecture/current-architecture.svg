@@ -1,149 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="diagram-title diagram-desc">
-  <title id="diagram-title">Ask Me Voice Kiosk current runtime architecture</title>
-  <desc id="diagram-desc">A kiosk browser connects to an Nginx and Vue frontend container. Nginx proxies API requests to a Spring Boot container. Spring Boot stores menus and orders in MySQL and sends voice audio to Google Cloud Speech-to-Text. The three application services run in Docker Compose, not on AWS.</desc>
-
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="810" viewBox="0 0 1500 810" role="img" aria-labelledby="title description">
+  <title id="title">Ask Me Voice Kiosk 현재 실행 아키텍처</title>
+  <desc id="description">GitHub Actions가 프로젝트를 검증합니다. 키오스크 브라우저는 Docker Compose의 Nginx가 제공하는 Vue, TypeScript, Vite 프론트엔드에 접속합니다. Nginx는 API 호출을 Java Spring Boot 백엔드로 프록시하며, 백엔드는 MySQL에 데이터를 저장하고 Google Cloud Speech-to-Text를 호출합니다.</desc>
   <defs>
-    <filter id="shadow" x="-15%" y="-15%" width="130%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#16202A" flood-opacity="0.12"/>
-    </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#F28C00"/>
-    </marker>
-
-    <!-- AWS Architecture Icons 2026 Q2: General Resource icons. -->
-    <symbol id="aws-client" viewBox="0 0 48 48">
-      <path d="M42.299,38.773 L42.299,40.696 C42.299,41.134 41.945,41.49 41.506,41.49 L30.762,41.49 C30.323,41.49 29.968,41.134 29.968,40.696 L29.968,38.773 C29.968,38.335 30.323,37.98 30.762,37.98 L41.506,37.98 C41.945,37.98 42.299,38.335 42.299,38.773 Z M43.797,42.399 C43.797,42.754 43.508,43.044 43.153,43.044 L4.645,43.044 C4.289,43.044 4,42.754 4,42.399 L4,37.011 C4,36.656 4.289,36.367 4.645,36.367 L43.153,36.367 C43.508,36.367 43.797,36.656 43.797,37.011 Z M43.153,34.367 L4.645,34.367 C3.187,34.367 2,35.553 2,37.011 L2,42.399 C2,43.857 3.187,45.044 4.645,45.044 L43.153,45.044 C44.611,45.044 45.797,43.857 45.797,42.399 L45.797,37.011 C45.797,35.553 44.611,34.367 43.153,34.367 Z M7.501,27.21 L40.264,27.21 L40.264,7.502 L7.501,7.502 Z M40.842,5.502 L6.924,5.502 C6.14,5.502 5.501,6.139 5.501,6.923 L5.501,27.788 C5.501,28.572 6.14,29.21 6.924,29.21 L40.842,29.21 C41.626,29.21 42.264,28.572 42.264,27.788 L42.264,6.923 C42.264,6.139 41.626,5.502 40.842,5.502 Z M43.797,30.067 C43.797,30.422 43.508,30.711 43.153,30.711 L4.645,30.711 C4.289,30.711 4,30.422 4,30.067 L4,4.644 C4,4.289 4.289,4 4.645,4 L43.153,4 C43.508,4 43.797,4.289 43.797,4.644 Z M43.153,2 L4.645,2 C3.187,2 2,3.186 2,4.644 L2,30.067 C2,31.525 3.187,32.711 4.645,32.711 L43.153,32.711 C44.611,32.711 45.797,31.525 45.797,30.067 L45.797,4.644 C45.797,3.186 44.611,2 43.153,2 Z" fill="#232F3D"/>
-    </symbol>
-    <symbol id="aws-application" viewBox="0 0 48 48">
-      <path d="M37,35 L46,35 L46,37 L37,37 L37,46 L35,46 L35,37 L26,37 L26,35 L35,35 L35,26 L37,26 Z M4,44 L20,44 L20,28 L4,28 Z M21,26 L3,26 C2.447,26 2,26.448 2,27 L2,45 C2,45.552 2.447,46 3,46 L21,46 C21.553,46 22,45.552 22,45 L22,27 C22,26.448 21.553,26 21,26 Z M28,20 L44,20 L44,4 L28,4 Z M45,2 L27,2 C26.447,2 26,2.448 26,3 L26,21 C26,21.552 26.447,22 27,22 L45,22 C45.553,22 46,21.552 46,21 L46,3 C46,2.448 45.553,2 45,2 Z M4,20 L20,20 L20,4 L4,4 Z M21,2 L3,2 C2.447,2 2,2.448 2,3 L2,21 C2,21.552 2.447,22 3,22 L21,22 C21.553,22 22,21.552 22,21 L22,3 C22,2.448 21.553,2 21,2 Z" fill="#232F3D"/>
-    </symbol>
-    <symbol id="aws-database" viewBox="0 0 48 48">
-      <path d="M31.755,43.307 C30.506,43.519 29.176,43.677 27.801,43.777 C27.244,43.817 26.678,43.847 26.105,43.869 C24.954,43.908 23.754,43.908 22.608,43.869 C22.033,43.847 21.467,43.817 20.91,43.777 C19.535,43.677 18.205,43.519 16.956,43.307 C12.049,42.475 9,40.73 9,38.754 L9,10.765 C11.997,12.661 17.74,13.841 24.356,13.841 C30.966,13.841 36.636,12.68 39.645,10.803 L39.645,38.754 C39.645,40.767 36.695,42.469 31.755,43.307 M24.356,4 C32.896,4 38.476,6.184 39.47,8.432 C37.802,10.098 32.46,11.841 24.356,11.841 C16.26,11.841 10.828,10.061 9.207,8.408 L9.171,8.443 C10.155,6.191 15.765,4 24.356,4 M24.356,2 C14.137,2 7,4.938 7,9.145 L7,38.754 C7,40.581 8.25,43.86 16.622,45.28 C17.933,45.501 19.327,45.667 20.766,45.771 C21.346,45.813 21.936,45.845 22.536,45.867 C23.134,45.888 23.741,45.899 24.356,45.899 C24.97,45.899 25.576,45.888 26.176,45.867 C26.776,45.845 27.365,45.813 27.945,45.771 C29.384,45.667 30.778,45.501 32.089,45.28 C40.403,43.869 41.645,40.586 41.645,38.754 L41.645,9.145 C41.645,4.938 34.535,2 24.356,2" fill="#232F3D"/>
-    </symbol>
-    <symbol id="aws-internet" viewBox="0 0 48 48">
-      <path d="M34.59,29.789 L30.997,33.381 L30.997,21.759 L28.997,21.759 L28.997,33.27 L25.556,29.773 L24.13,31.176 L29.325,36.455 C29.513,36.645 29.768,36.753 30.034,36.754 C30.303,36.754 30.558,36.648 30.745,36.461 L36.004,31.203 Z M22.35,27.724 L23.764,26.31 L18.506,21.052 C18.319,20.864 18.065,20.759 17.799,20.759 C17.528,20.76 17.274,20.867 17.086,21.058 L11.89,26.336 L13.316,27.738 L16.757,24.243 L16.757,37.554 L18.757,37.554 L18.757,24.131 Z M20.333,37.572 L27.4,37.579 L27.402,35.579 L20.335,35.572 Z M46.026,29.13 C46.026,31.617 45.272,33.628 43.783,35.105 C41.332,37.54 37.776,37.59 37.496,37.59 L32.721,37.585 L32.723,35.585 L37.491,35.59 C37.531,35.59 40.489,35.569 42.385,33.676 C43.474,32.588 44.026,31.059 44.026,29.13 C44.026,27.948 43.701,26.179 40.896,24.46 C39.422,23.557 38.041,23.259 37.517,23.174 C36.986,23.087 36.622,22.599 36.685,22.069 C36.507,19.974 35.526,18.508 33.982,18.04 C32.647,17.636 31.218,18.108 30.337,19.244 C30.116,19.531 29.763,19.677 29.396,19.62 C29.036,19.565 28.736,19.32 28.61,18.979 C27.992,17.314 27.099,15.917 25.955,14.823 C24.545,13.475 20.675,10.574 15.204,12.784 C12.069,14.051 9.611,17.689 9.611,21.067 C9.611,21.444 9.635,21.822 9.682,22.189 C9.743,22.673 9.446,23.131 8.981,23.272 C7.02,23.764 4,25.157 4,29.298 C4,32.443 5.799,34.182 7.308,35.087 C7.823,35.396 8.419,35.56 9.029,35.561 L15.181,35.567 L15.179,37.567 L9.028,37.561 C8.055,37.56 7.104,37.298 6.278,36.802 C4.681,35.844 2,33.595 2,29.298 C2,25.583 4.084,22.751 7.623,21.579 C7.615,21.409 7.611,21.238 7.611,21.067 C7.611,16.863 10.554,12.505 14.456,10.93 C19.001,9.093 23.817,10.011 27.338,13.378 C28.37,14.364 29.228,15.55 29.897,16.914 C31.234,15.945 32.938,15.637 34.562,16.126 C36.751,16.79 38.234,18.723 38.615,21.36 C39.748,21.642 40.925,22.132 41.941,22.755 C44.69,24.438 46.026,26.524 46.026,29.13 Z" fill="#232F3D"/>
-    </symbol>
-
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#16202A" flood-opacity="0.13"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#26323D"/></marker>
     <style>
-      .title { font: 700 27px "Segoe UI", "Noto Sans KR", sans-serif; fill: #17202A; }
-      .subtitle { font: 400 14px "Segoe UI", "Noto Sans KR", sans-serif; fill: #5C6670; }
-      .eyebrow { font: 700 11px "Segoe UI", "Noto Sans KR", sans-serif; letter-spacing: 1.2px; fill: #5C6670; }
-      .node-title { font: 700 19px "Segoe UI", "Noto Sans KR", sans-serif; fill: #17202A; }
-      .body { font: 400 13px "Segoe UI", "Noto Sans KR", sans-serif; fill: #4A5560; }
-      .boundary-title { font: 700 16px "Segoe UI", "Noto Sans KR", sans-serif; fill: #232F3D; }
-      .boundary-note { font: 400 12px "Segoe UI", "Noto Sans KR", sans-serif; fill: #68737D; }
-      .arrow-label { font: 700 11px "Segoe UI", "Noto Sans KR", sans-serif; fill: #8B4D00; }
-      .step { font: 700 12px "Segoe UI", "Noto Sans KR", sans-serif; fill: #232F3D; }
-      .footnote { font: 400 11px "Segoe UI", "Noto Sans KR", sans-serif; fill: #6A747D; }
+      .title { font: 700 28px "Segoe UI", "Noto Sans KR", sans-serif; fill: #18212B; }
+      .subtitle { font: 400 14px "Segoe UI", "Noto Sans KR", sans-serif; fill: #5B6570; }
+      .group { font: 700 16px "Segoe UI", "Noto Sans KR", sans-serif; fill: #18212B; }
+      .label { font: 700 15px "Segoe UI", "Noto Sans KR", sans-serif; fill: #1D2731; }
+      .body { font: 400 13px "Segoe UI", "Noto Sans KR", sans-serif; fill: #56616C; }
+      .small { font: 400 11px "Segoe UI", "Noto Sans KR", sans-serif; fill: #65717C; }
+      .arrow-label { font: 700 11px "Segoe UI", "Noto Sans KR", sans-serif; fill: #44515D; }
     </style>
   </defs>
+  <rect width="1500" height="810" fill="#FFFFFF"/>
+  <rect width="1500" height="8" fill="#FF9900"/>
+  <text x="52" y="53" class="title">현재 실행 아키텍처</text>
+  <text x="52" y="79" class="subtitle">현재 구현 기준 · Docker Compose에서 실행되는 Vue·Spring Boot·MySQL 주문 키오스크</text>
 
-  <rect width="1280" height="720" fill="#FFFFFF"/>
-  <rect x="0" y="0" width="1280" height="8" fill="#FF9900"/>
+  <!-- Current CI -->
+  <rect x="54" y="137" width="320" height="155" rx="10" fill="#FFFFFF" stroke="#4F5B66" stroke-width="2" stroke-dasharray="7 6"/>
+  <text x="75" y="169" class="group">CI</text>
+  <image href="brand-icons/github.svg" x="94" y="188" width="58" height="58"/>
+  <text x="123" y="269" text-anchor="middle" class="label">GitHub</text>
+  <path d="M160 217 H220" fill="none" stroke="#26323D" stroke-width="2" marker-end="url(#arrow)"/>
+  <image href="brand-icons/github-actions.svg" x="236" y="188" width="58" height="58"/>
+  <text x="265" y="269" text-anchor="middle" class="label">GitHub Actions</text>
+  <text x="214" y="286" text-anchor="middle" class="small">프론트엔드 테스트/빌드 · 백엔드 테스트/빌드</text>
 
-  <text x="50" y="51" class="title">CURRENT RUNTIME ARCHITECTURE</text>
-  <text x="50" y="77" class="subtitle">Ask Me Voice Kiosk · 현재 Docker Compose 실행 구조</text>
-  <g transform="translate(982 37)">
-    <rect width="248" height="42" rx="21" fill="#FFF4E5" stroke="#FFD08A"/>
-    <circle cx="22" cy="21" r="6" fill="#FF9900"/>
-    <text x="38" y="17" class="eyebrow" fill="#8B4D00">LOCAL / CONTAINERIZED</text>
-    <text x="38" y="32" class="boundary-note">AWS 배포 구성이 아님</text>
-  </g>
-
-  <!-- Docker Compose boundary -->
-  <rect x="300" y="108" width="650" height="525" rx="18" fill="#F7F8FA" stroke="#87939E" stroke-width="2" stroke-dasharray="8 7"/>
-  <rect x="324" y="92" width="248" height="36" rx="7" fill="#232F3D"/>
-  <rect x="324" y="92" width="7" height="36" rx="3" fill="#FF9900"/>
-  <text x="345" y="116" class="boundary-title" style="fill:#FFFFFF">Docker Compose runtime</text>
-  <text x="760" y="132" class="boundary-note">frontend · backend · mysql</text>
-
-  <!-- Kiosk client -->
+  <!-- Kiosk user -->
   <g filter="url(#shadow)">
-    <rect x="50" y="226" width="200" height="218" rx="15" fill="#FFFFFF" stroke="#D7DCE0"/>
-    <rect x="50" y="226" width="6" height="218" rx="3" fill="#FF9900"/>
+    <rect x="84" y="410" width="210" height="160" rx="14" fill="#FFFFFF" stroke="#D9DEE3"/>
+    <rect x="84" y="410" width="6" height="160" rx="3" fill="#FF9900"/>
   </g>
-  <use href="#aws-client" x="122" y="252" width="56" height="56"/>
-  <text x="150" y="332" text-anchor="middle" class="eyebrow">KIOSK CLIENT</text>
-  <text x="150" y="360" text-anchor="middle" class="node-title">Browser</text>
-  <text x="150" y="386" text-anchor="middle" class="body">터치 UI · 마이크 녹음</text>
-  <text x="150" y="407" text-anchor="middle" class="body">최대 20초 webm/opus</text>
+  <image href="aws-icons/client.svg" x="157" y="431" width="58" height="58"/>
+  <text x="189" y="519" text-anchor="middle" class="label">키오스크 브라우저</text>
+  <text x="189" y="544" text-anchor="middle" class="body">터치 · 마이크 · webm/opus</text>
 
-  <!-- Frontend container -->
-  <g filter="url(#shadow)">
-    <rect x="350" y="184" width="230" height="202" rx="15" fill="#FFFFFF" stroke="#D7DCE0"/>
-    <rect x="350" y="184" width="6" height="202" rx="3" fill="#41B883"/>
-  </g>
-  <use href="#aws-application" x="374" y="212" width="48" height="48"/>
-  <text x="442" y="221" class="eyebrow">FRONTEND CONTAINER</text>
-  <text x="442" y="247" class="node-title">Nginx + Vue 3</text>
-  <line x1="374" y1="276" x2="556" y2="276" stroke="#E4E7EA"/>
-  <text x="374" y="302" class="body">TypeScript · Pinia · Router</text>
-  <text x="374" y="326" class="body">Vite production build</text>
-  <text x="374" y="350" class="body">/api → backend:8080 proxy</text>
+  <!-- Docker Compose runtime -->
+  <rect x="414" y="132" width="1008" height="518" rx="16" fill="#FBFDFF" stroke="#2496ED" stroke-width="2" stroke-dasharray="8 7"/>
+  <image href="brand-icons/docker.svg" x="436" y="143" width="44" height="44"/>
+  <text x="490" y="173" class="group">Docker Compose · 현재 실행 환경</text>
+  <text x="490" y="193" class="small">프론트엔드 · 백엔드 · 데이터베이스</text>
 
-  <!-- Backend container -->
-  <g filter="url(#shadow)">
-    <rect x="650" y="184" width="250" height="202" rx="15" fill="#FFFFFF" stroke="#D7DCE0"/>
-    <rect x="650" y="184" width="6" height="202" rx="3" fill="#6DB33F"/>
-  </g>
-  <use href="#aws-application" x="674" y="212" width="48" height="48"/>
-  <text x="742" y="221" class="eyebrow">BACKEND CONTAINER</text>
-  <text x="742" y="247" class="node-title">Spring Boot 4.1</text>
-  <line x1="674" y1="276" x2="876" y2="276" stroke="#E4E7EA"/>
-  <text x="674" y="302" class="body">Java 21 · REST · JPA · Flyway</text>
-  <text x="674" y="326" class="body">주문 파서 · 메뉴/옵션 검증</text>
-  <text x="674" y="350" class="body">서버 가격 재계산 · 트랜잭션</text>
+  <!-- Frontend -->
+  <rect x="454" y="242" width="285" height="336" rx="12" fill="#EEF9F7" stroke="#64C6AE" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="476" y="272" class="label">프론트엔드 컨테이너</text>
+  <image href="brand-icons/vue.svg" x="483" y="298" width="52" height="52"/>
+  <image href="brand-icons/typescript.svg" x="565" y="304" width="45" height="45"/>
+  <image href="brand-icons/vite.svg" x="642" y="298" width="52" height="52"/>
+  <text x="510" y="373" text-anchor="middle" class="small">Vue 3</text>
+  <text x="587" y="373" text-anchor="middle" class="small">TypeScript</text>
+  <text x="668" y="373" text-anchor="middle" class="small">Vite</text>
+  <line x1="478" y1="396" x2="715" y2="396" stroke="#BFD8D2"/>
+  <image href="brand-icons/nginx.svg" x="486" y="418" width="58" height="58"/>
+  <text x="558" y="444" class="label">Nginx</text>
+  <text x="486" y="497" class="body">정적 파일 제공</text>
+  <text x="486" y="520" class="body">`/api` 역방향 프록시</text>
 
-  <!-- MySQL container -->
-  <g filter="url(#shadow)">
-    <rect x="650" y="454" width="250" height="144" rx="15" fill="#FFFFFF" stroke="#D7DCE0"/>
-    <rect x="650" y="454" width="6" height="144" rx="3" fill="#00758F"/>
-  </g>
-  <use href="#aws-database" x="674" y="481" width="48" height="48"/>
-  <text x="742" y="486" class="eyebrow">DATABASE CONTAINER</text>
-  <text x="742" y="514" class="node-title">MySQL 8.4</text>
-  <text x="674" y="554" class="body">menus · aliases · options</text>
-  <text x="674" y="578" class="body">orders · items · snapshots</text>
+  <!-- Backend -->
+  <rect x="810" y="242" width="310" height="336" rx="12" fill="#F2FAEE" stroke="#8FBE65" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="833" y="272" class="label">백엔드 컨테이너</text>
+  <image href="brand-icons/java.svg" x="840" y="298" width="62" height="62"/>
+  <image href="brand-icons/spring-boot.svg" x="950" y="302" width="54" height="54"/>
+  <text x="870" y="380" text-anchor="middle" class="small">Java 21</text>
+  <text x="977" y="380" text-anchor="middle" class="small">Spring Boot 4.1</text>
+  <line x1="834" y1="396" x2="1096" y2="396" stroke="#C6DBB7"/>
+  <text x="834" y="429" class="body">REST API · 주문 파서 · 메뉴/옵션 검증</text>
+  <text x="834" y="455" class="body">서버 가격 재계산 · 트랜잭션 · Flyway</text>
 
-  <!-- Google Cloud external API -->
-  <g filter="url(#shadow)">
-    <rect x="1010" y="226" width="220" height="218" rx="15" fill="#FFFFFF" stroke="#D7DCE0"/>
-    <rect x="1010" y="226" width="6" height="218" rx="3" fill="#4285F4"/>
-  </g>
-  <use href="#aws-internet" x="1088" y="250" width="58" height="58"/>
-  <text x="1120" y="332" text-anchor="middle" class="eyebrow">EXTERNAL CLOUD API</text>
-  <text x="1120" y="360" text-anchor="middle" class="node-title">Google Cloud STT</text>
-  <text x="1120" y="386" text-anchor="middle" class="body">Speech-to-Text V1</text>
-  <text x="1120" y="407" text-anchor="middle" class="body">동기 음성 인식 · ko-KR</text>
+  <!-- Database -->
+  <rect x="1178" y="274" width="204" height="272" rx="12" fill="#F0F8FA" stroke="#5FB7C8" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="1200" y="304" class="label">DB 컨테이너</text>
+  <image href="brand-icons/mysql.svg" x="1238" y="330" width="76" height="76"/>
+  <text x="1280" y="433" text-anchor="middle" class="label">MySQL 8.4</text>
+  <text x="1280" y="462" text-anchor="middle" class="small">메뉴 · 별칭 · 옵션</text>
+  <text x="1280" y="482" text-anchor="middle" class="small">주문 · 스냅샷</text>
 
-  <!-- Request paths -->
-  <path d="M250 304 H350" fill="none" stroke="#F28C00" stroke-width="3" marker-end="url(#arrow)"/>
-  <rect x="268" y="276" width="65" height="22" rx="11" fill="#FFF4E5"/>
-  <text x="300" y="291" text-anchor="middle" class="arrow-label">HTTP :5173</text>
+  <!-- External STT -->
+  <rect x="986" y="688" width="390" height="88" rx="12" fill="#FFFFFF" stroke="#4F5B66" stroke-width="2" stroke-dasharray="7 6"/>
+  <image href="brand-icons/google-cloud.svg" x="1014" y="708" width="54" height="54"/>
+  <text x="1090" y="727" class="label">Google Cloud Speech-to-Text V1</text>
+  <text x="1090" y="752" class="body">음성 전사 · `ko-KR` · 동기 인식</text>
 
-  <path d="M580 304 H650" fill="none" stroke="#F28C00" stroke-width="3" marker-end="url(#arrow)"/>
-  <rect x="590" y="276" width="50" height="22" rx="11" fill="#FFF4E5"/>
-  <text x="615" y="291" text-anchor="middle" class="arrow-label">/api/*</text>
-
-  <path d="M775 386 V454" fill="none" stroke="#F28C00" stroke-width="3" marker-end="url(#arrow)"/>
-  <rect x="790" y="408" width="65" height="22" rx="11" fill="#FFF4E5"/>
-  <text x="822" y="423" text-anchor="middle" class="arrow-label">JPA / JDBC</text>
-
-  <path d="M900 304 H1010" fill="none" stroke="#F28C00" stroke-width="3" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-  <rect x="915" y="276" width="80" height="22" rx="11" fill="#FFF4E5"/>
-  <text x="955" y="291" text-anchor="middle" class="arrow-label">audio ↔ text</text>
-
-  <!-- Flow legend -->
-  <g transform="translate(50 657)">
-    <circle cx="10" cy="10" r="10" fill="#FF9900"/><text x="10" y="14" text-anchor="middle" class="step" fill="#FFFFFF">1</text>
-    <text x="28" y="14" class="step">정적 UI 제공</text>
-    <circle cx="166" cy="10" r="10" fill="#FF9900"/><text x="166" y="14" text-anchor="middle" class="step" fill="#FFFFFF">2</text>
-    <text x="184" y="14" class="step">REST 요청</text>
-    <circle cx="294" cy="10" r="10" fill="#FF9900"/><text x="294" y="14" text-anchor="middle" class="step" fill="#FFFFFF">3</text>
-    <text x="312" y="14" class="step">주문 검증·저장</text>
-    <circle cx="458" cy="10" r="10" fill="#FF9900"/><text x="458" y="14" text-anchor="middle" class="step" fill="#FFFFFF">4</text>
-    <text x="476" y="14" class="step">음성 경로만 외부 API 호출</text>
-  </g>
-  <text x="1230" y="706" text-anchor="end" class="footnote">AWS General Resource icons used as visual notation only · 2026 Q2</text>
+  <!-- Flows -->
+  <path d="M294 490 H454" fill="none" stroke="#26323D" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="341" y="464" width="65" height="22" rx="11" fill="#F4F6F8"/><text x="374" y="479" text-anchor="middle" class="arrow-label">HTTP :5173</text>
+  <path d="M739 442 H810" fill="none" stroke="#26323D" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="747" y="415" width="54" height="22" rx="11" fill="#F4F6F8"/><text x="774" y="430" text-anchor="middle" class="arrow-label">/api</text>
+  <path d="M1120 442 H1178" fill="none" stroke="#26323D" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="1127" y="415" width="45" height="22" rx="11" fill="#F4F6F8"/><text x="1149" y="430" text-anchor="middle" class="arrow-label">JPA</text>
+  <path d="M966 578 V688" fill="none" stroke="#26323D" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <rect x="979" y="620" width="83" height="22" rx="11" fill="#F4F6F8"/><text x="1020" y="635" text-anchor="middle" class="arrow-label">음성 ↔ 텍스트</text>
+  <text x="54" y="790" class="small">실제 실행 경로: 브라우저 → Nginx/Vue → Spring Boot → MySQL · 음성 전사 시에만 Google Cloud STT 호출</text>
 </svg>
