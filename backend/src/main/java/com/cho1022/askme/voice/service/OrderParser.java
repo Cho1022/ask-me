@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 public class OrderParser {
 
     private static final Pattern QUANTITY_PATTERN = Pattern.compile("(\\d+)\\s*(?:잔|개|컵)?");
+    private static final Pattern ITEM_SEPARATOR_PATTERN = Pattern.compile("(?:하고|이랑|랑|그리고|,|\\+)");
     private static final Set<String> FILLERS = Set.of(
             "주세요", "주문", "추가", "해줘", "해 주세요", "부탁해", "부탁합니다", "먹고 싶어", "마시고 싶어"
     );
@@ -51,8 +52,7 @@ public class OrderParser {
         List<ParsedOrderItemResponse> items = new ArrayList<>();
         for (int index = 0; index < matches.size(); index++) {
             MenuMatch match = matches.get(index);
-            int contextEnd = index + 1 < matches.size() ? matches.get(index + 1).start() : effectiveText.length();
-            String context = effectiveText.substring(match.start(), contextEnd);
+            String context = itemContext(effectiveText, matches, index);
             items.add(new ParsedOrderItemResponse(
                     match.menu().getId(),
                     match.menu().getName(),
@@ -129,6 +129,31 @@ public class OrderParser {
             return 0;
         }
         return match.menu().getTemperature() == Temperature.ICE ? 1 : 2;
+    }
+
+    private String itemContext(String text, List<MenuMatch> matches, int index) {
+        MenuMatch current = matches.get(index);
+        String leading = index == 0
+                ? text.substring(0, current.start())
+                : afterLastSeparator(text.substring(matches.get(index - 1).end(), current.start()));
+        String trailing = index + 1 == matches.size()
+                ? text.substring(current.end())
+                : beforeFirstSeparator(text.substring(current.end(), matches.get(index + 1).start()));
+        return (leading + " " + text.substring(current.start(), current.end()) + " " + trailing).trim();
+    }
+
+    private String beforeFirstSeparator(String text) {
+        Matcher matcher = ITEM_SEPARATOR_PATTERN.matcher(text);
+        return matcher.find() ? text.substring(0, matcher.start()) : text;
+    }
+
+    private String afterLastSeparator(String text) {
+        Matcher matcher = ITEM_SEPARATOR_PATTERN.matcher(text);
+        int start = -1;
+        while (matcher.find()) {
+            start = matcher.end();
+        }
+        return start < 0 ? "" : text.substring(start);
     }
 
     private boolean rangesOverlap(MenuMatch left, MenuMatch right) {

@@ -9,6 +9,7 @@ import com.cho1022.askme.voice.domain.VoiceOrderAction;
 import com.cho1022.askme.voice.dto.ParseVoiceOrderResponse;
 import com.cho1022.askme.voice.service.VoiceOrderService;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -22,6 +23,53 @@ class OrderParserIntegrationTest {
 
     @Autowired
     private VoiceOrderService voiceOrderService;
+
+    @Test
+    void assignsQuantitiesBeforeAndAfterEachMenu() {
+        ParseVoiceOrderResponse result = voiceOrderService.parse("아메리카노 한 잔하고 두 잔 라떼 주세요");
+
+        assertThat(result.status()).isEqualTo(ParseStatus.CONFIRMATION_REQUIRED);
+        assertThat(result.items()).hasSize(2);
+        assertThat(result.items()).extracting(item -> item.menuId()).containsExactly(1L, 3L);
+        assertThat(result.items()).extracting(item -> item.quantity()).containsExactly(1, 2);
+    }
+
+    @Test
+    void assignsLeadingQuantityToTheFirstMenu() {
+        ParseVoiceOrderResponse result = voiceOrderService.parse("두 잔 아이스 아메리카노 주세요");
+
+        assertThat(result.status()).isEqualTo(ParseStatus.CONFIRMATION_REQUIRED);
+        assertThat(result.items()).hasSize(1);
+        assertThat(result.items().getFirst().menuId()).isEqualTo(1L);
+        assertThat(result.items().getFirst().quantity()).isEqualTo(2);
+    }
+
+    @Test
+    void parsesEveryItemInAMultiMenuOrder() {
+        ParseVoiceOrderResponse result = voiceOrderService.parse("아아 두 잔하고 카페라떼 한 잔 주세요");
+
+        assertThat(result.status()).isEqualTo(ParseStatus.CONFIRMATION_REQUIRED);
+        assertThat(result.items()).hasSize(2);
+        assertThat(result.items()).extracting(item -> item.menuId()).containsExactly(1L, 3L);
+        assertThat(result.items()).extracting(item -> item.quantity()).containsExactly(2, 1);
+    }
+
+    @Test
+    void doesNotCopyAnItemsTrailingContextToTheNextMenuWithoutASeparator() {
+        ParseVoiceOrderResponse result = voiceOrderService.parse("아메리카노 두 잔 라떼 한 잔");
+
+        assertThat(result.items()).hasSize(2);
+        assertThat(result.items()).extracting(item -> item.quantity()).containsExactly(2, 1);
+    }
+
+    @Test
+    void doesNotCopyARemoveActionToTheNextMenuWithoutASeparator() {
+        ParseVoiceOrderResponse result = voiceOrderService.parse("아메리카노 빼줘 라떼 추가");
+
+        assertThat(result.items()).hasSize(2);
+        assertThat(result.items()).extracting(item -> item.action())
+                .containsExactly(VoiceOrderAction.REMOVE, VoiceOrderAction.ADD);
+    }
 
     @ParameterizedTest
     @MethodSource("voiceOrderCases")
