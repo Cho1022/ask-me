@@ -14,6 +14,7 @@ import com.cho1022.askme.order.dto.CreateOrderResponse;
 import com.cho1022.askme.order.repository.OrderRepository;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -36,6 +37,9 @@ public class OrderService {
 
     @Transactional
     public CreateOrderResponse createOrder(CreateOrderRequest request) {
+        Map<Long, Menu> menusById = menuService.getActiveMenusByIds(request.items().stream()
+                .map(CreateOrderItemRequest::menuId)
+                .collect(Collectors.toCollection(LinkedHashSet::new)));
         Order order = new Order(
                 newOrderNumber(),
                 blankToNull(request.originalTranscript()),
@@ -45,7 +49,7 @@ public class OrderService {
         );
 
         for (CreateOrderItemRequest itemRequest : request.items()) {
-            Menu menu = menuService.getActiveMenu(itemRequest.menuId());
+            Menu menu = menusById.get(itemRequest.menuId());
             Map<Long, MenuOption> availableOptions = menu.getOptions().stream()
                     .filter(MenuOption::isActive)
                     .collect(Collectors.toMap(MenuOption::getId, Function.identity()));

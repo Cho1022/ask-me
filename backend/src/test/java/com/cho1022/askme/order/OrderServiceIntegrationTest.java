@@ -56,6 +56,24 @@ class OrderServiceIntegrationTest {
     }
 
     @Test
+    void createsAMultiMenuOrderWithServerCalculatedTotal() {
+        CreateOrderRequest request = new CreateOrderRequest(
+                List.of(
+                        new CreateOrderItemRequest(1L, 2, DrinkSize.REGULAR, List.of()),
+                        new CreateOrderItemRequest(3L, 1, DrinkSize.LARGE, List.of())
+                ),
+                null,
+                OrderChannel.TOUCH,
+                ServiceMode.DINE_IN,
+                PaymentMethod.CARD
+        );
+
+        CreateOrderResponse response = orderService.createOrder(request);
+
+        assertThat(response.totalPrice()).isEqualTo(10_300);
+    }
+
+    @Test
     void rejectsAnOptionThatBelongsToAnotherMenu() {
         Menu latte = menuService.getActiveMenu(3L);
         Long latteOptionId = latte.getOptions().stream()

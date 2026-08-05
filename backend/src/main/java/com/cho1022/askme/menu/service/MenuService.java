@@ -5,6 +5,10 @@ import com.cho1022.askme.menu.domain.Menu;
 import com.cho1022.askme.menu.dto.MenuResponse;
 import com.cho1022.askme.menu.repository.MenuRepository;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,5 +33,19 @@ public class MenuService {
     public Menu getActiveMenu(Long menuId) {
         return menuRepository.findByIdAndActiveTrue(menuId)
                 .orElseThrow(() -> new ResourceNotFoundException("판매 중인 메뉴를 찾을 수 없습니다: " + menuId));
+    }
+
+    public Map<Long, Menu> getActiveMenusByIds(Set<Long> menuIds) {
+        if (menuIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, Menu> menusById = menuRepository.findByIdInAndActiveTrue(menuIds).stream()
+                .collect(Collectors.toMap(Menu::getId, Function.identity()));
+        for (Long menuId : menuIds) {
+            if (!menusById.containsKey(menuId)) {
+                throw new ResourceNotFoundException("판매 중인 메뉴를 찾을 수 없습니다: " + menuId);
+            }
+        }
+        return Map.copyOf(menusById);
     }
 }
