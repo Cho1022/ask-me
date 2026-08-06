@@ -10,16 +10,22 @@ import com.google.cloud.speech.v1.SpeechClient;
 import com.google.protobuf.ByteString;
 import java.io.IOException;
 import java.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnProperty(name = "app.google-stt.enabled", havingValue = "true")
-public class GoogleSpeechToTextClient implements SpeechToTextClient {
+public class GoogleSpeechToTextClient implements SpeechToTextClient, DisposableBean {
+
+    private static final Logger log = LoggerFactory.getLogger(GoogleSpeechToTextClient.class);
 
     private final String languageCode;
     private final long timeoutSeconds;
+    private volatile SpeechClient speechClient;
 
     public GoogleSpeechToTextClient(
             @Value("${app.google-stt.language-code}") String languageCode,
@@ -48,14 +54,37 @@ public class GoogleSpeechToTextClient implements SpeechToTextClient {
         GrpcCallContext callContext = GrpcCallContext.createDefault()
                 .withTimeoutDuration(Duration.ofSeconds(timeoutSeconds));
 
-        try (SpeechClient client = SpeechClient.create()) {
-            RecognizeResponse response = client.recognizeCallable().call(request, callContext);
+        try {
+            RecognizeResponse response = getSpeechClient().recognizeCallable().call(request, callContext);
             return response.getResultsList().stream()
                     .filter(result -> result.getAlternativesCount() > 0)
                     .map(result -> result.getAlternatives(0).getTranscript())
                     .reduce("", (left, right) -> (left + " " + right).trim());
         } catch (IOException | RuntimeException exception) {
-            throw new ServiceUnavailableException("Google 음성 인식에 연결하지 못했습니다.");
+            log.warn("Google Speech-to-Text request failed", exception);
+            throw new ServiceUnavailableException("Google 음성 인식에 연결하지 못했습니다.", exception);
+        }
+    }
+
+    private SpeechClient getSpeechClient() throws IOException {
+        SpeechClient current = speechClient;
+        if (current != null) {
+            return current;
+        }
+        synchronized (this) {
+            if (speechClient == null) {
+                speechClient = SpeechClient.create();
+            }
+            return speechClient;
+        }
+    }
+
+    @Override
+    public void destroy() {
+        SpeechClient current = speechClient;
+        if (current != null) {
+            current.close();
+            speechClient = null;
         }
     }
 
