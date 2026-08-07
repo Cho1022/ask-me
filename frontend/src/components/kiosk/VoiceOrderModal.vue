@@ -12,8 +12,11 @@ const emit = defineEmits<{
 
 const store = useVoiceOrderStore()
 const manualTranscript = ref('')
+const acquiring = ref(false)
 let mediaRecorder: MediaRecorder | null = null
 let mediaStream: MediaStream | null = null
+let requestController: AbortController | null = null
+let sessionVersion = 0
 let chunks: BlobPart[] = []
 let startedAt = 0
 let stopTimer: number | null = null
@@ -22,18 +25,19 @@ let tickTimer: number | null = null
 watch(
   () => props.open,
   (open) => {
+    invalidateSession()
     if (open) {
       store.reset()
       manualTranscript.value = ''
-    } else {
-      stopAndCleanup()
     }
   },
+  { immediate: true },
 )
 
-onBeforeUnmount(stopAndCleanup)
+onBeforeUnmount(invalidateSession)
 
 async function startRecording() {
+  if (acquiring.value || store.recording || store.processing) return
   store.error = ''
   store.parsedOrder = null
   if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
@@ -51,8 +55,15 @@ async function startRecording() {
     return
   }
 
+  const session = sessionVersion
+  acquiring.value = true
   try {
-    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    if (!isCurrentSession(session)) {
+      stream.getTracks().forEach((track) => track.stop())
+      return
+    }
+    mediaStream = stream
     chunks = []
     mediaRecorder = new MediaRecorder(mediaStream, { mimeType })
     mediaRecorder.ondataavailable = (event) => {
@@ -68,8 +79,12 @@ async function startRecording() {
     }, 100)
     stopTimer = window.setTimeout(stopRecording, 20_000)
   } catch {
-    store.error = '마이크 권한을 허용한 뒤 다시 시도해 주세요.'
-    stopAndCleanup()
+    if (isCurrentSession(session)) {
+      store.error = '마이크 권한을 허용한 뒤 다시 시도해 주세요.'
+      stopAndCleanup()
+    }
+  } finally {
+    if (session === sessionVersion) acquiring.value = false
   }
 }
 
@@ -78,38 +93,50 @@ function stopRecording() {
 }
 
 async function finishRecording() {
+  const session = sessionVersion
+  if (!isCurrentSession(session)) return
   const durationMs = Math.max(1, Math.min(Date.now() - startedAt, 20_000))
   const audio = new Blob(chunks, { type: mediaRecorder?.mimeType || 'audio/webm' })
   cleanupMedia()
   store.recording = false
   store.processing = true
+  const controller = beginRequest()
   try {
-    const transcript = await transcribeAudio(audio, durationMs)
-    store.transcript = transcript
+    const transcript = await transcribeAudio(audio, durationMs, controller.signal)
+    if (!isCurrentSession(session)) return
     manualTranscript.value = transcript
-    store.parsedOrder = await parseVoiceOrder(transcript)
+    const parsedOrder = await parseVoiceOrder(transcript, controller.signal)
+    if (isCurrentSession(session)) store.parsedOrder = parsedOrder
   } catch (error) {
-    store.error = error instanceof Error ? error.message : '음성을 처리하지 못했습니다.'
+    if (isCurrentSession(session) && !isAbortError(error)) {
+      store.error = error instanceof Error ? error.message : '음성을 처리하지 못했습니다.'
+    }
   } finally {
-    store.processing = false
+    finishRequest(controller, session)
   }
 }
 
 async function parseManualTranscript() {
+  if (acquiring.value || store.recording || store.processing) return
   const transcript = manualTranscript.value.trim()
   if (!transcript) {
     store.error = '주문 문장을 입력해 주세요.'
     return
   }
+  const session = sessionVersion
   store.processing = true
   store.error = ''
+  store.parsedOrder = null
+  const controller = beginRequest()
   try {
-    store.transcript = transcript
-    store.parsedOrder = await parseVoiceOrder(transcript)
+    const parsedOrder = await parseVoiceOrder(transcript, controller.signal)
+    if (isCurrentSession(session)) store.parsedOrder = parsedOrder
   } catch (error) {
-    store.error = error instanceof Error ? error.message : '주문 문장을 해석하지 못했습니다.'
+    if (isCurrentSession(session) && !isAbortError(error)) {
+      store.error = error instanceof Error ? error.message : '주문 문장을 해석하지 못했습니다.'
+    }
   } finally {
-    store.processing = false
+    finishRequest(controller, session)
   }
 }
 
@@ -117,10 +144,43 @@ function applyResult() {
   if (store.parsedOrder) emit('apply', store.parsedOrder)
 }
 
+function closeModal() {
+  invalidateSession()
+  emit('close')
+}
+
+function isCurrentSession(session: number): boolean {
+  return props.open && session === sessionVersion
+}
+
+function beginRequest(): AbortController {
+  requestController?.abort()
+  requestController = new AbortController()
+  return requestController
+}
+
+function finishRequest(controller: AbortController, session: number) {
+  if (requestController === controller) requestController = null
+  if (session === sessionVersion) store.processing = false
+}
+
+function isAbortError(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError'
+}
+
+function invalidateSession() {
+  sessionVersion += 1
+  requestController?.abort()
+  requestController = null
+  acquiring.value = false
+  store.processing = false
+  stopAndCleanup()
+}
+
 function stopAndCleanup() {
-  if (mediaRecorder?.state === 'recording') {
+  if (mediaRecorder) {
     mediaRecorder.onstop = null
-    mediaRecorder.stop()
+    if (mediaRecorder.state === 'recording') mediaRecorder.stop()
   }
   cleanupMedia()
   store.recording = false
@@ -138,14 +198,14 @@ function cleanupMedia() {
 </script>
 
 <template>
-  <div v-if="open" class="modal-backdrop" role="presentation" @click.self="$emit('close')">
+  <div v-if="open" class="modal-backdrop" role="presentation" @click.self="closeModal">
     <section class="voice-modal" role="dialog" aria-modal="true" aria-labelledby="voice-title">
       <header class="modal-header">
         <div>
           <p class="eyebrow">VOICE ORDER · 최대 20초</p>
           <h2 id="voice-title">원하는 메뉴를 말해 주세요</h2>
         </div>
-        <button class="modal-close" type="button" aria-label="음성 주문 닫기" @click="$emit('close')">×</button>
+        <button class="modal-close" type="button" aria-label="음성 주문 닫기" @click="closeModal">×</button>
       </header>
 
       <div class="voice-stage" :class="{ 'voice-stage--recording': store.recording }">
@@ -153,16 +213,17 @@ function cleanupMedia() {
           <i v-for="index in 14" :key="index" :style="{ '--bar': index }"></i>
         </div>
         <strong v-if="store.recording">듣고 있습니다 · {{ Math.ceil(store.elapsedMs / 1000) }}초</strong>
+        <strong v-else-if="acquiring">마이크 권한을 확인하고 있습니다</strong>
         <strong v-else-if="store.processing">음성을 주문 문장으로 바꾸고 있습니다</strong>
         <strong v-else>버튼을 누르고 또박또박 말씀해 주세요</strong>
         <p>예: “아이스 아메리카노 두 잔하고 라떼 한 잔 주세요”</p>
         <button
           class="record-button"
           type="button"
-          :disabled="store.processing"
+          :disabled="acquiring || store.processing"
           @click="store.recording ? stopRecording() : startRecording()"
         >
-          {{ store.recording ? '말하기 끝내기' : '음성 녹음 시작' }}
+          {{ acquiring ? '마이크 연결 중' : store.recording ? '말하기 끝내기' : '음성 녹음 시작' }}
         </button>
       </div>
 
@@ -174,10 +235,14 @@ function cleanupMedia() {
             v-model="manualTranscript"
             type="text"
             placeholder="아아 두 잔하고 라떼 한 잔 주세요"
-            :disabled="store.recording || store.processing"
+            :disabled="acquiring || store.recording || store.processing"
             @keyup.enter="parseManualTranscript"
           />
-          <button type="button" :disabled="store.recording || store.processing" @click="parseManualTranscript">
+          <button
+            type="button"
+            :disabled="acquiring || store.recording || store.processing"
+            @click="parseManualTranscript"
+          >
             문장 확인
           </button>
         </div>
