@@ -78,23 +78,21 @@ function addMenu(payload: { menu: Menu; size: 'REGULAR' | 'LARGE'; optionIds: nu
 }
 
 function applyVoiceOrder(result: ParseVoiceOrderResponse) {
-  cart.orderChannel = 'VOICE'
-  cart.originalTranscript = result.transcript
   let changed = 0
   for (const parsedItem of result.items) {
     const menu = menus.value.find((candidate) => candidate.id === parsedItem.menuId)
     if (!menu) continue
+    const optionIds = parsedItem.options.map((option) => option.optionId)
     if (parsedItem.action === 'REMOVE') {
-      cart.remove(menu.id, parsedItem.quantity)
+      if (cart.remove(menu.id, parsedItem.size, optionIds, parsedItem.quantity)) changed += 1
     } else {
-      cart.add(
-        menu,
-        parsedItem.size,
-        parsedItem.options.map((option) => option.optionId),
-        parsedItem.quantity,
-      )
+      cart.add(menu, parsedItem.size, optionIds, parsedItem.quantity)
+      changed += 1
     }
-    changed += 1
+  }
+  if (changed) {
+    cart.orderChannel = 'VOICE'
+    cart.originalTranscript = result.transcript
   }
   notice.value = changed ? '음성 주문 내용을 장바구니에 반영했습니다.' : '반영할 메뉴가 없습니다.'
   if (changed) voiceOpen.value = false

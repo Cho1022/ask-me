@@ -44,9 +44,20 @@ describe('cart store', () => {
     const cart = useCartStore()
     cart.add(americano, 'REGULAR', [], 2)
 
-    cart.remove(americano.id, 2)
+    cart.remove(americano.id, 'REGULAR', [], 2)
 
     expect(cart.items).toHaveLength(0)
+  })
+
+  it('removes only the matching size and option configuration', () => {
+    const cart = useCartStore()
+    cart.add(americano, 'REGULAR', [], 2)
+    cart.add(americano, 'LARGE', [101])
+
+    expect(cart.remove(americano.id, 'LARGE', [101])).toBe(true)
+    expect(cart.items).toHaveLength(1)
+    expect(cart.items[0]?.size).toBe('REGULAR')
+    expect(cart.remove(americano.id, 'LARGE', [101])).toBe(false)
   })
 
   it('caps a single configured item at 99 drinks', () => {

@@ -34,13 +34,15 @@ export const useCartStore = defineStore('cart', () => {
     items.value.push({ key, menu, size, optionIds: [...optionIds], quantity: Math.min(99, Math.max(1, quantity)) })
   }
 
-  function remove(menuId: number, quantity = 1) {
-    const item = items.value.find((candidate) => candidate.menu.id === menuId)
-    if (!item) return
+  function remove(menuId: number, size: DrinkSize, optionIds: number[], quantity = 1): boolean {
+    const key = cartKey(menuId, size, optionIds)
+    const item = items.value.find((candidate) => candidate.key === key)
+    if (!item) return false
     item.quantity -= quantity
     if (item.quantity <= 0) {
       items.value = items.value.filter((candidate) => candidate.key !== item.key)
     }
+    return true
   }
 
   function changeQuantity(key: string, delta: number) {
